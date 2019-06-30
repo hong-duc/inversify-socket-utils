@@ -1,12 +1,9 @@
 import * as http from "http";
 import * as SocketIO from "socket.io";
 import { Container } from "inversify";
-import { Interfaces, InversifySocketServer, TYPE } from "../../src";
-import { MessageController } from "./controllers/message";
+import { InversifySocketServer } from "../../src";
 
 let container = new Container();
-
-container.bind<Interfaces.Controller>(TYPE.Controller).to(MessageController);
 
 let app = http.createServer();
 
