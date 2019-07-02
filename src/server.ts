@@ -100,13 +100,14 @@ export class InversifySocketServer {
           });
           break;
         case ACTION_TYPE.MESSAGE:
-          socket.on(metadata.name, (payload: any) => {
+          socket.on(metadata.name, (payload: any, ackFunc: any) => {
             this.handleAction(
               socket,
               controllerMetadata,
               metadata,
               parameterMetadata,
-              payload
+              payload,
+              ackFunc
             );
           });
           break;
@@ -114,12 +115,13 @@ export class InversifySocketServer {
     });
   }
 
-  private handleAction(
+  private async handleAction(
     socket: any,
     controller: Interfaces.ControllerMetadata,
     action: Interfaces.ControllerActionMetadata,
     parameters: Interfaces.ControllerParameterMetadata,
-    payload?: any
+    payload?: any,
+    ackFunc?: any
   ) {
     let paramList: Interfaces.ParameterMetadata[] = [];
     if (parameters) {
@@ -127,9 +129,14 @@ export class InversifySocketServer {
     }
 
     let args = this.extractParams(socket, payload, paramList);
-    (this.container.getNamed(TYPE.Controller, controller.target.name) as any)[
-      action.key
-    ](...args);
+    const result = await (this.container.getNamed(
+      TYPE.Controller,
+      controller.target.name
+    ) as any)[action.key](...args);
+
+    if (ackFunc) {
+      ackFunc(result);
+    }
   }
 
   private extractParams(
